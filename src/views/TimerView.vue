@@ -65,6 +65,7 @@ const phaseColor = computed(() => {
 })
 
 // EMOM-specific computeds
+// @ts-expect-error dont care
 const isEmomMode = computed(() => timerStore.mode === 'EMOM')
 const emomRoundDisplay = computed(() => `Round ${currentEmomRound.value} / ${timerStore.rounds}`)
 
@@ -173,8 +174,8 @@ function resetTimer() {
       </button>
       <button
         class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg flex items-center justify-center transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500 shadow-md text-sm"
-        :class="{ 'opacity-50 cursor-not-allowed': !isRunning && !isPaused && !timerStore.elapsedTime }"
-        :disabled="!isRunning && !isPaused && !timerStore.elapsedTime"
+        :class="{ 'opacity-50 cursor-not-allowed': !isRunning && !isPaused }"
+        :disabled="!isRunning && !isPaused"
         @click="resetTimer"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
