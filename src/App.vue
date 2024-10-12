@@ -10,11 +10,10 @@ const timerStore = useTimerStore()
 watch(isDarkMode, (newValue) => {
   if (newValue) {
     document.documentElement.classList.add('dark')
+    return
   }
-  else {
-    document.documentElement.classList.remove('dark')
-  }
-})
+  document.documentElement.classList.remove('dark')
+}, { immediate: true })
 
 function toggleDarkMode() {
   isDarkMode.value = !isDarkMode.value
@@ -28,7 +27,7 @@ function toggleDarkMode() {
         {{ timerStore.timerType.toUpperCase() }} Timer
       </h1>
     </header>
-    <main class="flex-grow overflow-y-auto pt-16 pb-20 px-4">
+    <main class="flex-grow overflow-y-auto pt-16 pb-20 px-1">
       <div class="container mx-auto py-8">
         <RouterView />
       </div>

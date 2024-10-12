@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import TimerCircle from '../components/TimerCircle.vue'
 import { useTimerStore } from '../stores/timerStore'
 
 const timerStore = useTimerStore()
@@ -8,30 +9,12 @@ const isRunning = ref(false)
 const isPaused = ref(false)
 const currentEmomRound = ref(1)
 
-// Timer Display Computeds
-const formattedTime = computed(() => {
-  const minutes = Math.floor(timerStore.currentTime / 60)
-  const seconds = timerStore.currentTime % 60
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-})
+const currentRound = computed(() => timerStore.currentRound)
 
-const totalTime = computed(() => {
-  return timerStore.currentPhase === 'Work' ? timerStore.workTime : timerStore.restTime
-})
-
-const progress = computed(() => {
-  return ((totalTime.value - timerStore.currentTime) / totalTime.value) * 100
-})
-
-const strokeDasharray = computed(() => {
-  const circumference = 2 * Math.PI * 80
-  return `${circumference} ${circumference}`
-})
-
-const strokeDashoffset = computed(() => {
-  const circumference = 2 * Math.PI * 80
-  return circumference - (progress.value / 100) * circumference
-})
+// EMOM-specific computeds
+// @ts-expect-error bla
+const isEmomMode = computed(() => timerStore.mode === 'EMOM')
+const emomRoundDisplay = computed(() => `Round ${currentEmomRound.value} / ${timerStore.rounds}`)
 
 // Timer Controls Computeds
 const startPauseText = computed(() => {
@@ -58,16 +41,6 @@ const startPauseColor = computed(() => {
     return 'bg-blue-500 hover:bg-blue-600'
   return 'bg-green-500 hover:bg-green-600'
 })
-
-// Phase color
-const phaseColor = computed(() => {
-  return timerStore.currentPhase === 'Work' ? 'text-red-500' : 'text-green-500'
-})
-
-// EMOM-specific computeds
-// @ts-expect-error dont care
-const isEmomMode = computed(() => timerStore.mode === 'EMOM')
-const emomRoundDisplay = computed(() => `Round ${currentEmomRound.value} / ${timerStore.rounds}`)
 
 // Watch for phase changes
 watch(() => timerStore.currentPhase, () => {
@@ -118,42 +91,10 @@ function resetTimer() {
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-between h-full p-4">
-    <div class="flex-grow flex flex-col items-center justify-center w-full max-w-md">
-      <div class="relative w-full pb-[100%] mb-4">
-        <svg class="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 180 180">
-          <circle
-            class="text-gray-200 dark:text-gray-700"
-            stroke-width="12"
-            stroke="currentColor"
-            fill="transparent"
-            r="84"
-            cx="90"
-            cy="90"
-          />
-          <circle
-            class="progress-ring__circle"
-            :class="phaseColor"
-            stroke-width="12"
-            :stroke-dasharray="strokeDasharray"
-            :stroke-dashoffset="strokeDashoffset"
-            stroke="currentColor"
-            fill="transparent"
-            r="84"
-            cx="90"
-            cy="90"
-          />
-        </svg>
-        <div class="absolute inset-0 flex flex-col items-center justify-center">
-          <div class="text-4xl md:text-6xl font-bold text-gray-800 dark:text-white">
-            {{ formattedTime }}
-          </div>
-          <div v-if="!isEmomMode" class="text-xl md:text-2xl mt-1 font-semibold" :class="[phaseColor]">
-            {{ timerStore.currentPhase }}
-          </div>
-        </div>
-      </div>
-      <div class="text-lg md:text-xl mb-4 text-center text-gray-600 dark:text-gray-300">
+  <div class="flex flex-col h-full">
+    <!-- Round information -->
+    <div class="text-center mb-6">
+      <div class="text-2xl font-bold text-gray-700 dark:text-gray-200">
         <template v-if="isEmomMode">
           {{ emomRoundDisplay }}
         </template>
@@ -162,39 +103,49 @@ function resetTimer() {
         </template>
       </div>
     </div>
-    <div class="flex justify-center space-x-4 w-full max-w-md">
-      <button
-        class="flex-1 px-4 py-3 text-white rounded-lg flex items-center justify-center transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500 shadow-md text-sm md:text-base"
-        :class="[startPauseColor, { 'opacity-50 cursor-not-allowed': timerStore.isFinished }]"
-        :disabled="timerStore.isFinished"
-        @click="toggleStartPause"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="startPauseIcon" />
-        </svg>
-        {{ startPauseText }}
-      </button>
-      <button
-        class="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg flex items-center justify-center transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500 shadow-md text-sm md:text-base"
-        :class="{ 'opacity-50 cursor-not-allowed': !isRunning && !isPaused }"
-        :disabled="!isRunning && !isPaused"
-        @click="resetTimer"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-        Reset
-      </button>
+
+    <!-- Timer circle -->
+    <div class="flex-grow flex items-center justify-center">
+      <TimerCircle
+        :current-time="timerStore.currentTime"
+        :total-time="timerStore.currentPhase === 'Work' ? timerStore.workTime : timerStore.restTime"
+        :current-phase="timerStore.currentPhase"
+        :is-emom-mode="isEmomMode"
+        :current-round="currentRound"
+      />
+    </div>
+
+    <!-- Control buttons -->
+    <div class="mt-12">
+      <div class="flex justify-center space-x-6 w-full max-w-md mx-auto">
+        <button
+          class="flex-1 px-6 py-4 text-white rounded-full flex items-center justify-center transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500 shadow-lg text-lg font-semibold"
+          :class="[startPauseColor, { 'opacity-50 cursor-not-allowed': timerStore.isFinished }]"
+          :disabled="timerStore.isFinished"
+          @click="toggleStartPause"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="startPauseIcon" />
+          </svg>
+          {{ startPauseText }}
+        </button>
+        <button
+          class="flex-1 px-6 py-4 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-red-500 shadow-lg text-lg font-semibold"
+          :class="{ 'opacity-50 cursor-not-allowed': !isRunning && !isPaused }"
+          :disabled="!isRunning && !isPaused"
+          @click="resetTimer"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Reset
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.progress-ring__circle {
-  transition: stroke-dashoffset 1s linear;
-  transform-origin: 50% 50%;
-}
-
 button:active {
   transform: scale(0.98);
 }
