@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import TimerView from '../views/TimerView.vue'
 import SettingsView from '../views/SettingsView.vue'
+import TimerView from '../views/TimerView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,14 +8,14 @@ const router = createRouter({
     {
       path: '/',
       name: 'timer',
-      component: TimerView
+      component: TimerView,
     },
     {
       path: '/settings',
       name: 'settings',
-      component: SettingsView
-    }
-  ]
+      component: SettingsView,
+    },
+  ],
 })
 
 export default router

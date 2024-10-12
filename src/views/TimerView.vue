@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import TimerDisplay from '../components/TimerDisplay.vue';
-import TimerControls from '../components/TimerControls.vue';
+import TimerControls from '../components/TimerControls.vue'
+import TimerDisplay from '../components/TimerDisplay.vue'
 </script>
 
 <template>

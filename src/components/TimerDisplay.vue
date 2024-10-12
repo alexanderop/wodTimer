@@ -1,44 +1,44 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
-import { useTimerStore } from '../stores/timerStore';
+import { computed, watch } from 'vue'
+import { useTimerStore } from '../stores/timerStore'
 
-const timerStore = useTimerStore();
+const timerStore = useTimerStore()
 
 const formattedTime = computed(() => {
-  const minutes = Math.floor(timerStore.currentTime / 60);
-  const seconds = timerStore.currentTime % 60;
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-});
+  const minutes = Math.floor(timerStore.currentTime / 60)
+  const seconds = timerStore.currentTime % 60
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+})
 
 const totalTime = computed(() => {
-  return timerStore.currentPhase === 'Work' ? timerStore.workTime : timerStore.restTime;
-});
+  return timerStore.currentPhase === 'Work' ? timerStore.workTime : timerStore.restTime
+})
 
 const progress = computed(() => {
-  return ((totalTime.value - timerStore.currentTime) / totalTime.value) * 100;
-});
+  return ((totalTime.value - timerStore.currentTime) / totalTime.value) * 100
+})
 
 const strokeDasharray = computed(() => {
-  const circumference = 2 * Math.PI * 90; // 90 is the radius of the circle
-  return `${circumference} ${circumference}`;
-});
+  const circumference = 2 * Math.PI * 90 // 90 is the radius of the circle
+  return `${circumference} ${circumference}`
+})
 
 const strokeDashoffset = computed(() => {
-  const circumference = 2 * Math.PI * 90;
-  return circumference - (progress.value / 100) * circumference;
-});
+  const circumference = 2 * Math.PI * 90
+  return circumference - (progress.value / 100) * circumference
+})
 
 watch(() => timerStore.currentPhase, () => {
   // Reset the animation when the phase changes
-  const circle = document.querySelector('.progress-ring__circle') as SVGCircleElement;
+  const circle = document.querySelector('.progress-ring__circle') as SVGCircleElement
   if (circle) {
-    circle.style.transition = 'none';
-    circle.setAttribute('stroke-dashoffset', '0');
+    circle.style.transition = 'none'
+    circle.setAttribute('stroke-dashoffset', '0')
     setTimeout(() => {
-      circle.style.transition = 'stroke-dashoffset 1s linear';
-    }, 50);
+      circle.style.transition = 'stroke-dashoffset 1s linear'
+    }, 50)
   }
-});
+})
 </script>
 
 <template>
@@ -67,8 +67,12 @@ watch(() => timerStore.currentPhase, () => {
         />
       </svg>
       <div class="absolute inset-0 flex flex-col items-center justify-center">
-        <div class="text-5xl font-bold">{{ formattedTime }}</div>
-        <div class="text-xl mt-2">{{ timerStore.currentPhase }}</div>
+        <div class="text-5xl font-bold">
+          {{ formattedTime }}
+        </div>
+        <div class="text-xl mt-2">
+          {{ timerStore.currentPhase }}
+        </div>
       </div>
     </div>
     <div class="text-xl mt-4">
