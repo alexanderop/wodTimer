@@ -118,51 +118,53 @@ function resetTimer() {
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center h-full p-4">
-    <div class="relative w-56 h-56 mb-4">
-      <svg class="w-full h-full transform -rotate-90" viewBox="0 0 180 180">
-        <circle
-          class="text-gray-200 dark:text-gray-700"
-          stroke-width="12"
-          stroke="currentColor"
-          fill="transparent"
-          r="84"
-          cx="90"
-          cy="90"
-        />
-        <circle
-          class="progress-ring__circle"
-          :class="phaseColor"
-          stroke-width="12"
-          :stroke-dasharray="strokeDasharray"
-          :stroke-dashoffset="strokeDashoffset"
-          stroke="currentColor"
-          fill="transparent"
-          r="84"
-          cx="90"
-          cy="90"
-        />
-      </svg>
-      <div class="absolute inset-0 flex flex-col items-center justify-center">
-        <div class="text-4xl font-bold text-gray-800 dark:text-white">
-          {{ formattedTime }}
-        </div>
-        <div v-if="!isEmomMode" class="text-xl mt-1 font-semibold" :class="[phaseColor]">
-          {{ timerStore.currentPhase }}
+  <div class="flex flex-col items-center justify-between h-full p-4">
+    <div class="flex-grow flex flex-col items-center justify-center w-full max-w-md">
+      <div class="relative w-full pb-[100%] mb-4">
+        <svg class="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 180 180">
+          <circle
+            class="text-gray-200 dark:text-gray-700"
+            stroke-width="12"
+            stroke="currentColor"
+            fill="transparent"
+            r="84"
+            cx="90"
+            cy="90"
+          />
+          <circle
+            class="progress-ring__circle"
+            :class="phaseColor"
+            stroke-width="12"
+            :stroke-dasharray="strokeDasharray"
+            :stroke-dashoffset="strokeDashoffset"
+            stroke="currentColor"
+            fill="transparent"
+            r="84"
+            cx="90"
+            cy="90"
+          />
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+          <div class="text-4xl md:text-6xl font-bold text-gray-800 dark:text-white">
+            {{ formattedTime }}
+          </div>
+          <div v-if="!isEmomMode" class="text-xl md:text-2xl mt-1 font-semibold" :class="[phaseColor]">
+            {{ timerStore.currentPhase }}
+          </div>
         </div>
       </div>
+      <div class="text-lg md:text-xl mb-4 text-center text-gray-600 dark:text-gray-300">
+        <template v-if="isEmomMode">
+          {{ emomRoundDisplay }}
+        </template>
+        <template v-else>
+          Round {{ timerStore.currentRound }} / {{ timerStore.rounds }}
+        </template>
+      </div>
     </div>
-    <div class="text-lg mb-4 text-center text-gray-600 dark:text-gray-300">
-      <template v-if="isEmomMode">
-        {{ emomRoundDisplay }}
-      </template>
-      <template v-else>
-        Round {{ timerStore.currentRound }} / {{ timerStore.rounds }}
-      </template>
-    </div>
-    <div class="flex justify-center space-x-4 w-full">
+    <div class="flex justify-center space-x-4 w-full max-w-md">
       <button
-        class="flex-1 px-4 py-2 text-white rounded-lg flex items-center justify-center transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500 shadow-md text-sm"
+        class="flex-1 px-4 py-3 text-white rounded-lg flex items-center justify-center transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500 shadow-md text-sm md:text-base"
         :class="[startPauseColor, { 'opacity-50 cursor-not-allowed': timerStore.isFinished }]"
         :disabled="timerStore.isFinished"
         @click="toggleStartPause"
@@ -173,7 +175,7 @@ function resetTimer() {
         {{ startPauseText }}
       </button>
       <button
-        class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg flex items-center justify-center transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500 shadow-md text-sm"
+        class="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg flex items-center justify-center transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500 shadow-md text-sm md:text-base"
         :class="{ 'opacity-50 cursor-not-allowed': !isRunning && !isPaused }"
         :disabled="!isRunning && !isPaused"
         @click="resetTimer"
