@@ -9,12 +9,12 @@ const isRunning = ref(false)
 const isPaused = ref(false)
 const currentEmomRound = ref(1)
 
-const currentRound = computed(() => timerStore.currentRound)
+const totalRounds = computed(() => timerStore.rounds)
+
 
 // EMOM-specific computeds
 // @ts-expect-error bla
 const isEmomMode = computed(() => timerStore.mode === 'EMOM')
-const emomRoundDisplay = computed(() => `Round ${currentEmomRound.value} / ${timerStore.rounds}`)
 
 // Timer Controls Computeds
 const startPauseText = computed(() => {
@@ -92,17 +92,6 @@ function resetTimer() {
 
 <template>
   <div class="flex flex-col h-full">
-    <!-- Round information -->
-    <div class="text-center mb-6">
-      <div class="text-2xl font-bold text-gray-700 dark:text-gray-200">
-        <template v-if="isEmomMode">
-          {{ emomRoundDisplay }}
-        </template>
-        <template v-else>
-          Round {{ timerStore.currentRound }} / {{ timerStore.rounds }}
-        </template>
-      </div>
-    </div>
 
     <!-- Timer circle -->
     <div class="flex-grow flex items-center justify-center">
@@ -111,37 +100,38 @@ function resetTimer() {
         :total-time="timerStore.currentPhase === 'Work' ? timerStore.workTime : timerStore.restTime"
         :current-phase="timerStore.currentPhase"
         :is-emom-mode="isEmomMode"
-        :current-round="currentRound"
+        :current-round="timerStore.currentRound"
+        :total-rounds="totalRounds"
       />
-    </div>
+  </div>
 
-    <!-- Control buttons -->
-    <div class="mt-12">
-      <div class="flex justify-center space-x-6 w-full max-w-md mx-auto">
-        <button
-          class="flex-1 px-6 py-4 text-white rounded-full flex items-center justify-center transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500 shadow-lg text-lg font-semibold"
-          :class="[startPauseColor, { 'opacity-50 cursor-not-allowed': timerStore.isFinished }]"
-          :disabled="timerStore.isFinished"
-          @click="toggleStartPause"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="startPauseIcon" />
-          </svg>
-          {{ startPauseText }}
-        </button>
-        <button
-          class="flex-1 px-6 py-4 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-red-500 shadow-lg text-lg font-semibold"
-          :class="{ 'opacity-50 cursor-not-allowed': !isRunning && !isPaused }"
-          :disabled="!isRunning && !isPaused"
-          @click="resetTimer"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          Reset
-        </button>
-      </div>
+  <!-- Control buttons -->
+  <div class="mt-12">
+    <div class="flex justify-center space-x-6 w-full max-w-md mx-auto">
+      <button
+        class="flex-1 px-6 py-4 text-white rounded-full flex items-center justify-center transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500 shadow-lg text-lg font-semibold"
+        :class="[startPauseColor, { 'opacity-50 cursor-not-allowed': timerStore.isFinished }]"
+        :disabled="timerStore.isFinished"
+        @click="toggleStartPause"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="startPauseIcon" />
+        </svg>
+        {{ startPauseText }}
+      </button>
+      <button
+        class="flex-1 px-6 py-4 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-red-500 shadow-lg text-lg font-semibold"
+        :class="{ 'opacity-50 cursor-not-allowed': !isRunning && !isPaused }"
+        :disabled="!isRunning && !isPaused"
+        @click="resetTimer"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Reset
+      </button>
     </div>
+  </div>
   </div>
 </template>
 
