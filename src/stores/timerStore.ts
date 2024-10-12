@@ -1,90 +1,110 @@
 import { defineStore } from 'pinia'
+import {  ref } from 'vue'
 
-export const useTimerStore = defineStore('timer', {
-  state: () => ({
-    currentTime: 0,
-    workTime: 20,
-    restTime: 10,
-    rounds: 8,
-    currentRound: 1,
-    timerType: 'tabata',
-    isRunning: false,
-    currentPhase: 'Work',
-    interval: null as number | null,
-  }),
-  actions: {
-    start() {
-      if (!this.isRunning) {
-        this.isRunning = true
-        this.interval = setInterval(() => {
-          if (this.currentTime > 0) {
-            this.currentTime--
-          }
-          else {
-            this.nextPhase()
-          }
-        }, 1000)
-      }
-    },
-    pause() {
-      if (this.isRunning) {
-        this.isRunning = false
-        if (this.interval) {
-          clearInterval(this.interval)
-        }
-      }
-    },
-    reset() {
-      this.pause()
-      this.currentTime = this.workTime
-      this.currentRound = 1
-      this.currentPhase = 'Work'
-    },
-    nextPhase() {
-      if (this.timerType === 'tabata') {
-        if (this.currentPhase === 'Work') {
-          if (this.currentRound < this.rounds) {
-            this.currentPhase = 'Rest'
-            this.currentTime = this.restTime
-          }
-          else {
-            this.pause()
-            this.reset()
-          }
+export const useTimerStore = defineStore('timer', () => {
+  const currentTime = ref(0)
+  const workTime = ref(20)
+  const restTime = ref(10)
+  const rounds = ref(8)
+  const currentRound = ref(1)
+  const timerType = ref('tabata')
+  const isRunning = ref(false)
+  const currentPhase = ref('Work')
+  const interval = ref<number | null>(null)
+
+  function start() {
+    if (!isRunning.value) {
+      isRunning.value = true
+      interval.value = setInterval(() => {
+        if (currentTime.value > 0) {
+          currentTime.value--
         }
         else {
-          this.currentPhase = 'Work'
-          this.currentTime = this.workTime
-          this.currentRound++
+          nextPhase()
         }
+      }, 1000)
+    }
+  }
+
+  function pause() {
+    if (isRunning.value) {
+      isRunning.value = false
+      if (interval.value) {
+        clearInterval(interval.value)
       }
-      else if (this.timerType === 'emom') {
-        if (this.currentRound < this.rounds) {
-          this.currentRound++
-          this.currentTime = this.workTime
+    }
+  }
+
+  function reset() {
+    pause()
+    currentTime.value = workTime.value
+    currentRound.value = 1
+    currentPhase.value = 'Work'
+  }
+
+  function nextPhase() {
+    if (timerType.value === 'tabata') {
+      if (currentPhase.value === 'Work') {
+        if (currentRound.value < rounds.value) {
+          currentPhase.value = 'Rest'
+          currentTime.value = restTime.value
         }
         else {
-          this.pause()
-          this.reset()
+          pause()
+          reset()
         }
       }
-      this.playAudioCue()
-    },
-    updateSettings(settings: { workTime: number, restTime: number, rounds: number, timerType: string }) {
-      this.workTime = settings.workTime
-      this.restTime = settings.restTime
-      this.rounds = settings.rounds
-      this.timerType = settings.timerType
-      this.reset()
-    },
-    playAudioCue() {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-      const oscillator = audioContext.createOscillator()
-      oscillator.type = 'sine'
-      oscillator.frequency.setValueAtTime(440, audioContext.currentTime) // 440 Hz = A4 note
-      oscillator.connect(audioContext.destination)
-      oscillator.start()
-      oscillator.stop(audioContext.currentTime + 0.2) // Play for 0.2 seconds
-    },
-  },
+      else {
+        currentPhase.value = 'Work'
+        currentTime.value = workTime.value
+        currentRound.value++
+      }
+    }
+    else if (timerType.value === 'emom') {
+      if (currentRound.value < rounds.value) {
+        currentRound.value++
+        currentTime.value = workTime.value
+      }
+      else {
+        pause()
+        reset()
+      }
+    }
+    playAudioCue()
+  }
+
+  function updateSettings(settings: { workTime: number, restTime: number, rounds: number, timerType: string }) {
+    workTime.value = settings.workTime
+    restTime.value = settings.restTime
+    rounds.value = settings.rounds
+    timerType.value = settings.timerType
+    reset()
+  }
+
+  function playAudioCue() {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+    const oscillator = audioContext.createOscillator()
+    oscillator.type = 'sine'
+    oscillator.frequency.setValueAtTime(440, audioContext.currentTime) // 440 Hz = A4 note
+    oscillator.connect(audioContext.destination)
+    oscillator.start()
+    oscillator.stop(audioContext.currentTime + 0.2) // Play for 0.2 seconds
+  }
+
+  return {
+    currentTime,
+    workTime,
+    restTime,
+    rounds,
+    currentRound,
+    timerType,
+    isRunning,
+    currentPhase,
+    start,
+    pause,
+    reset,
+    nextPhase,
+    updateSettings,
+    playAudioCue,
+  }
 })
