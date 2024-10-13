@@ -132,12 +132,43 @@ export const useTimerStore = defineStore('timer', () => {
     playAudioCue()
   }
 
-  const updateSettings = (settings: { workTime: number, restTime: number, rounds: number, timerType: string }) => {
-    workTime.value = settings.workTime
-    restTime.value = settings.restTime
-    rounds.value = settings.rounds
+  // Add these new properties
+  const tabataSettings = ref({
+    workTime: 20,
+    restTime: 10,
+    rounds: 8,
+  })
+
+  const emomSettings = ref({
+    intervalTime: 60,
+    rounds: 10,
+  })
+
+  // Modify the existing updateSettings function
+  const updateSettings = (settings: { workTime?: number, restTime?: number, rounds?: number, intervalTime?: number, timerType: string }) => {
+    if (settings.timerType === 'tabata') {
+      if (settings.workTime !== undefined) tabataSettings.value.workTime = settings.workTime
+      if (settings.restTime !== undefined) tabataSettings.value.restTime = settings.restTime
+      if (settings.rounds !== undefined) tabataSettings.value.rounds = settings.rounds
+      workTime.value = tabataSettings.value.workTime
+      restTime.value = tabataSettings.value.restTime
+    } else if (settings.timerType === 'emom') {
+      if (settings.intervalTime !== undefined) emomSettings.value.intervalTime = settings.intervalTime
+      if (settings.rounds !== undefined) emomSettings.value.rounds = settings.rounds
+      workTime.value = emomSettings.value.intervalTime
+    }
+    rounds.value = settings.timerType === 'tabata' ? tabataSettings.value.rounds : emomSettings.value.rounds
     timerType.value = settings.timerType
     reset()
+  }
+
+  // Add these new methods
+  const updateTabataSettings = (workTime: number, restTime: number, rounds: number) => {
+    updateSettings({ workTime, restTime, rounds, timerType: 'tabata' })
+  }
+
+  const updateEmomSettings = (intervalTime: number, rounds: number) => {
+    updateSettings({ intervalTime, rounds, timerType: 'emom' })
   }
 
   return {
@@ -158,5 +189,9 @@ export const useTimerStore = defineStore('timer', () => {
     nextPhase,
     updateSettings,
     playAudioCue,
+    tabataSettings,
+    emomSettings,
+    updateTabataSettings,
+    updateEmomSettings,
   }
 })
