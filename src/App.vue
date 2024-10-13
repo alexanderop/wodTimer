@@ -2,10 +2,13 @@
 import { ref, watch } from 'vue'
 import { RouterView } from 'vue-router'
 import FooterMenu from './components/FooterMenu.vue'
+import { useKeepAwake } from './composables/useKeepAwake'
 import { useTimerStore } from './stores/timerStore'
 
 const isDarkMode = ref(true)
 const timerStore = useTimerStore()
+
+useKeepAwake()
 
 watch(isDarkMode, (newValue) => {
   if (newValue) {

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 
 export const useTimerStore = defineStore('timer', () => {
   const currentTime = ref(0)
@@ -10,10 +10,10 @@ export const useTimerStore = defineStore('timer', () => {
   const timerType = ref('tabata')
   const isRunning = ref(false)
   const currentPhase = ref('Work')
-  const interval = ref<number | null>(null)
+  const interval = ref<ReturnType<typeof setInterval> | null>(null)
   const isFinished = ref(false)
   const elapsedTime = ref(0)
-  const elapsedInterval = ref<number | null>(null)
+  const elapsedInterval = ref<ReturnType<typeof setInterval> | null>(null)
   const countdownAudio = ref<AudioContext | null>(null)
 
   const formattedElapsedTime = computed(() => {
@@ -22,11 +22,29 @@ export const useTimerStore = defineStore('timer', () => {
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
   })
 
+  const playCountdownSound = () => {
+    if (!countdownAudio.value) {
+      countdownAudio.value = new (window.AudioContext || (window as any).webkitAudioContext)()
+    }
+
+    const oscillator = countdownAudio.value.createOscillator()
+    oscillator.type = 'sine'
+    oscillator.frequency.setValueAtTime(330, countdownAudio.value.currentTime) // 330 Hz = E4 note
+
+    const gainNode = countdownAudio.value.createGain()
+    gainNode.gain.setValueAtTime(0.1, countdownAudio.value.currentTime)
+
+    oscillator.connect(gainNode)
+    gainNode.connect(countdownAudio.value.destination)
+
+    oscillator.start()
+    oscillator.stop(countdownAudio.value.currentTime + 0.1) // Play for 0.1 seconds
+  }
+
   const start = () => {
     if (!isRunning.value) {
       isRunning.value = true
       isFinished.value = false
-      // @ts-expect-error dont care
       interval.value = setInterval(() => {
         if (currentTime.value > 0) {
           currentTime.value--
@@ -40,7 +58,6 @@ export const useTimerStore = defineStore('timer', () => {
       }, 1000)
 
       // Start elapsed time counter
-      // @ts-expect-error dont care
       elapsedInterval.value = setInterval(() => {
         elapsedTime.value++
       }, 1000)
@@ -72,7 +89,17 @@ export const useTimerStore = defineStore('timer', () => {
     elapsedTime.value = 0
   }
 
-  const nextPhase = () => {
+  const playAudioCue = () => {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+    const oscillator = audioContext.createOscillator()
+    oscillator.type = 'sine'
+    oscillator.frequency.setValueAtTime(440, audioContext.currentTime) // 440 Hz = A4 note
+    oscillator.connect(audioContext.destination)
+    oscillator.start()
+    oscillator.stop(audioContext.currentTime + 0.2) // Play for 0.2 seconds
+  }
+
+  function nextPhase() {
     if (timerType.value === 'tabata') {
       if (currentPhase.value === 'Work') {
         if (currentRound.value < rounds.value) {
@@ -111,35 +138,6 @@ export const useTimerStore = defineStore('timer', () => {
     rounds.value = settings.rounds
     timerType.value = settings.timerType
     reset()
-  }
-
-  const playAudioCue = () => {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-    const oscillator = audioContext.createOscillator()
-    oscillator.type = 'sine'
-    oscillator.frequency.setValueAtTime(440, audioContext.currentTime) // 440 Hz = A4 note
-    oscillator.connect(audioContext.destination)
-    oscillator.start()
-    oscillator.stop(audioContext.currentTime + 0.2) // Play for 0.2 seconds
-  }
-
-  const playCountdownSound = () => {
-    if (!countdownAudio.value) {
-      countdownAudio.value = new (window.AudioContext || (window as any).webkitAudioContext)()
-    }
-    
-    const oscillator = countdownAudio.value.createOscillator()
-    oscillator.type = 'sine'
-    oscillator.frequency.setValueAtTime(330, countdownAudio.value.currentTime) // 330 Hz = E4 note
-    
-    const gainNode = countdownAudio.value.createGain()
-    gainNode.gain.setValueAtTime(0.1, countdownAudio.value.currentTime)
-    
-    oscillator.connect(gainNode)
-    gainNode.connect(countdownAudio.value.destination)
-    
-    oscillator.start()
-    oscillator.stop(countdownAudio.value.currentTime + 0.1) // Play for 0.1 seconds
   }
 
   return {
